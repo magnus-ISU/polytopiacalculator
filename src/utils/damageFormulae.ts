@@ -1,10 +1,24 @@
+// Helper function to handle floating point precision in rounding
+export const safeRound = (value: number): number => {
+    return Math.round(value + 1e-10);
+};
+
 export const calculateAttackForce = (
     attack: number,
     health: number,
     maxHealth: number
 ): number => {
     const attackForce = attack * (health / maxHealth);
-    console.log("attack force: " + attack + "*" + health + "/" + maxHealth + "=" + attackForce);
+    console.log(
+        "attack force: " +
+            attack +
+            "*" +
+            health +
+            "/" +
+            maxHealth +
+            "=" +
+            attackForce
+    );
     return attackForce;
 };
 
@@ -15,7 +29,18 @@ export const calculateDefenceForce = (
     defenseBonus: number
 ): number => {
     const defenceForce = defense * (health / maxHealth) * defenseBonus;
-    console.log("defence force: " + defense + "*" + health + "/" + maxHealth + "*" + defenseBonus + "=" + defenceForce);
+    console.log(
+        "defence force: " +
+            defense +
+            "*" +
+            health +
+            "/" +
+            maxHealth +
+            "*" +
+            defenseBonus +
+            "=" +
+            defenceForce
+    );
     return defenceForce;
 };
 
@@ -24,7 +49,9 @@ export const calculateTotalDamage = (
     defenseForce: number
 ): number => {
     const totalDamage = attackForce + defenseForce;
-    console.log("total damage: " + attackForce + "+" + defenseForce + "=" + totalDamage)
+    console.log(
+        "total damage: " + attackForce + "+" + defenseForce + "=" + totalDamage
+    );
     return totalDamage;
 };
 
@@ -33,8 +60,18 @@ export const calculateAttackResult = (
     totalDamage: number,
     attack: number
 ): number => {
-    const attackResult = Math.round(attackForce / totalDamage * attack * 4.5);
-    console.log("attack result: " + attackForce + "/" + totalDamage + "*" + attack + "*" + "4.5=" + attackResult);
+    const attackResult = safeRound((attackForce / totalDamage) * attack * 4.5);
+    console.log(
+        "attack result: " +
+            attackForce +
+            "/" +
+            totalDamage +
+            "*" +
+            attack +
+            "*" +
+            "4.5=" +
+            attackResult
+    );
     return attackResult;
 };
 
@@ -43,8 +80,9 @@ export const calculateAttackSplash = (
     totalDamage: number,
     attack: number
 ): number => {
-    const attackSplash = calculateAttackResult(attackForce, totalDamage, attack) / 2;
-    console.log("attack splash (divide 2): " + attackSplash)
+    const attackSplash =
+        calculateAttackResult(attackForce, totalDamage, attack) / 2;
+    console.log("attack splash (divide 2): " + attackSplash);
     return attackSplash;
 };
 
@@ -53,7 +91,19 @@ export const calculateDefenseResult = (
     totalDamage: number,
     defense: number
 ): number => {
-    const defenseResult = Math.round(defenseForce / totalDamage * defense * 4.5);
-    console.log("attack result: " + defenseForce + "/" + totalDamage + "*" + defense + "*" + "4.5=" + defenseResult);
+    const defenseResult = safeRound(
+        (defenseForce / totalDamage) * defense * 4.5
+    );
+    console.log(
+        "defense result: " +
+            defenseForce +
+            "/" +
+            totalDamage +
+            "*" +
+            defense +
+            "*" +
+            "4.5=" +
+            defenseResult
+    );
     return defenseResult;
 };

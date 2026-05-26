@@ -43,11 +43,16 @@ import HexapodAtt from "../img/Attackers/Hexapod.png";
 import KitonAtt from "../img/Attackers/Kiton.png";
 import PhychiAtt from "../img/Attackers/Phychi.png";
 import RaychiAtt from "../img/Attackers/Raychi.png";
+import BoomchiAtt from "../img/Attackers/Boomchi.png";
+import LivingIslandAtt from "../img/Attackers/Living Island.png";
 import ShamanAtt from "../img/Attackers/Shaman.png";
 import ExidaAtt from "../img/Attackers/Exida.png";
 import DoomuxAtt from "../img/Attackers/Doomux.png";
 import CentipedeAtt from "../img/Attackers/Centipede.png";
 import SegmentAtt from "../img/Attackers/Segment.png";
+import InsectEggAtt from "../img/Attackers/Insect Egg.png";
+import LarvaAtt from "../img/Attackers/Larva.png";
+import MothAtt from "../img/Attackers/Moth.png";
 import MindBenderAtt from "../img/Attackers/Mind Bender.png";
 import NatureBunnyAtt from "../img/Attackers/Nature Bunny.png";
 import DaggerAtt from "../img/Attackers/Dagger.png";
@@ -91,11 +96,16 @@ import HexapodDef from "../img/Defenders/Hexapod.png";
 import KitonDef from "../img/Defenders/Kiton.png";
 import PhychiDef from "../img/Defenders/Phychi.png";
 import RaychiDef from "../img/Defenders/Raychi.png";
+import BoomchiDef from "../img/Attackers/Boomchi.png";
+import LivingIslandDef from "../img/Attackers/Living Island.png";
 import ShamanDef from "../img/Defenders/Shaman.png";
 import ExidaDef from "../img/Defenders/Exida.png";
 import DoomuxDef from "../img/Defenders/Doomux.png";
 import CentipedeDef from "../img/Defenders/Centipede.png";
 import SegmentDef from "../img/Defenders/Segment.png";
+import InsectEggDef from "../img/Attackers/Insect Egg.png";
+import LarvaDef from "../img/Attackers/Larva.png";
+import MothDef from "../img/Attackers/Moth.png";
 import MindBenderDef from "../img/Defenders/Mind Bender.png";
 import NatureBunnyDef from "../img/Defenders/Nature Bunny.png";
 import DaggerDef from "../img/Defenders/Dagger.png";
@@ -107,10 +117,12 @@ import ScoutDef from "../img/Defenders/Scout.png";
 import RammerDef from "../img/Defenders/Rammer.png";
 import BomberDef from "../img/Defenders/Bomber.png";
 import JuggernautDef from "../img/Defenders/Juggernaut.png";
+import { ShamanBuffScheme, VersionConfig } from "../types/VersionConfig";
 
 // Same Props as before
 type SoldierUnitAsRenderProps = {
     soldierUnit: SoldierUnit;
+    versionConfig: VersionConfig | undefined;
     onDelete?: any;
     onUpdateHitpoints?: any;
     onIncreaseHitpoints?: any;
@@ -128,6 +140,7 @@ type SoldierUnitAsRenderProps = {
 
 const SoldierUnitAsRender = ({
     soldierUnit,
+    versionConfig,
     onDelete,
     onUpdateHitpoints,
     onIncreaseHitpoints,
@@ -288,28 +301,16 @@ const SoldierUnitAsRender = ({
     const handleClickDefenceBonus = () => {
         let defVal = !isToggleOnDefence;
         setIsToggleOnDefence(defVal);
-        if (defVal) {
-            setIsToggleOnPoisoned(false);
-            setIsToggleOnWall(false);
-        }
         console.log("Unit has defence bonus");
     };
     const handleClickWallBonus = () => {
         let wallVal = !isToggleOnWall;
         setIsToggleOnWall(wallVal);
-        if (wallVal) {
-            setIsToggleOnPoisoned(false);
-            setIsToggleOnDefence(false);
-        }
         console.log("Unit has wall bonus");
     };
     const handleClickPoisonedBonus = () => {
         let poisVal = !isToggleOnPoisoned;
         setIsToggleOnPoisoned(poisVal);
-        if (poisVal) {
-            setIsToggleOnWall(false);
-            setIsToggleOnDefence(false);
-        }
         console.log("Unit is poisoned");
     };
     const handleHitpointsChange = (healthBeforeManualInput: any) => {
@@ -380,11 +381,16 @@ const SoldierUnitAsRender = ({
             Kiton: KitonAtt,
             Phychi: PhychiAtt,
             Raychi: RaychiAtt,
+            Boomchi: BoomchiAtt,
+            LivingIsland: LivingIslandAtt,
             Shaman: ShamanAtt,
             Exida: ExidaAtt,
             Doomux: DoomuxAtt,
             Centipede: CentipedeAtt,
             Segment: SegmentAtt,
+            InsectEgg: InsectEggAtt,
+            Larva: LarvaAtt,
+            Moth: MothAtt,
             Dagger: DaggerAtt,
             Cloak: CloakAtt,
             Dinghy: DinghyAtt,
@@ -429,11 +435,16 @@ const SoldierUnitAsRender = ({
             Kiton: KitonDef,
             Phychi: PhychiDef,
             Raychi: RaychiDef,
+            Boomchi: BoomchiDef,
+            LivingIsland: LivingIslandDef,
             Shaman: ShamanDef,
             Exida: ExidaDef,
             Doomux: DoomuxDef,
             Centipede: CentipedeDef,
             Segment: SegmentDef,
+            InsectEgg: InsectEggDef,
+            Larva: LarvaDef,
+            Moth: MothDef,
             Dagger: DaggerDef,
             Cloak: CloakDef,
             Dinghy: DinghyDef,
@@ -521,7 +532,13 @@ const SoldierUnitAsRender = ({
                             />
                         </label>
                     </span>
-                    <span style={{ fontWeight: "bold" }}>
+                    <span
+                        style={{
+                            fontWeight: "bold",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
                         <ArrowForwardIcon /> {displayHealthAfter()}
                     </span>
                 </div>
@@ -791,7 +808,12 @@ const SoldierUnitAsRender = ({
                 }}
                 style={{
                     display:
-                        soldierUnit.team === "Attackers" ? "visible" : "none",
+                        soldierUnit.team === "Attackers"
+                            ? versionConfig?.shamanBuffScheme ===
+                              ShamanBuffScheme.BOOST
+                                ? "visible"
+                                : "none"
+                            : "none",
                     ...getSecondaryButtonStyles(),
                 }}
                 sx={{

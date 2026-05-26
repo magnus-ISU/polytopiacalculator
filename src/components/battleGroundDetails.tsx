@@ -9,16 +9,21 @@ import Box from "@mui/material/Box";
 // removed Checkbox and FormControlLabel (order toggle no longer used)
 import { logEvent } from "firebase/analytics";
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { LATEST_VERSION } from "../config/version.global";
 import {
     MAX_WIDTH_PX,
     SINGLE_COL_MAX_WIDTH_PX,
     SINGLE_COLUMN_WIDTH_PERCENTAGE,
 } from "../customStyles";
 import { SoldierUnit } from "../types/SoldierUnit";
-import { UnitConfig, VersionConfig } from "../types/VersionConfig";
 import { loadAllConfigs } from "../utils/configLoader";
+import {
+    PoisonScheme,
+    VersionConfig,
+    SplashScheme,
+} from "../types/VersionConfig";
+import { UnitConfig } from "../types/SoldierUnit";
+import { useSearchParams } from "react-router-dom";
+import { LATEST_VERSION } from "../config/version.global";
 import {
     calculateAttackForce,
     calculateAttackResult,
@@ -405,19 +410,36 @@ const BattleGroundDetails = () => {
                     if (u.id === id) {
                         const updated = { ...u };
                         updated[which] = !u[which];
-                        // Certain combos disable others
-                        if (which === "defenceBonus" && updated[which]) {
-                            updated.wallBonus = false;
-                            updated.poisonedBonus = false;
+                        if (versionConfig?.poisonScheme === PoisonScheme.OLD) {
+                            // Certain combos disable others
+                            if (which === "defenceBonus" && updated[which]) {
+                                updated.wallBonus = false;
+                                updated.poisonedBonus = false;
+                            }
+                            if (which === "wallBonus" && updated[which]) {
+                                updated.defenceBonus = false;
+                                updated.poisonedBonus = false;
+                            }
+                            if (which === "poisonedBonus" && updated[which]) {
+                                updated.wallBonus = false;
+                                updated.defenceBonus = false;
+                            }
+                        } else {
+                            // Poisoned bonus doesn't affect other bonuses
+                            if (which === "defenceBonus" && updated[which]) {
+                                updated.wallBonus = false;
+                                // updated.poisonedBonus = false;
+                            }
+                            if (which === "wallBonus" && updated[which]) {
+                                updated.defenceBonus = false;
+                                // updated.poisonedBonus = false;
+                            }
+                            if (which === "poisonedBonus" && updated[which]) {
+                                // updated.wallBonus = false;
+                                // updated.defenceBonus = false;
+                            }
                         }
-                        if (which === "wallBonus" && updated[which]) {
-                            updated.defenceBonus = false;
-                            updated.poisonedBonus = false;
-                        }
-                        if (which === "poisonedBonus" && updated[which]) {
-                            updated.wallBonus = false;
-                            updated.defenceBonus = false;
-                        }
+
                         return updated;
                     }
                     return u;
@@ -621,14 +643,29 @@ const BattleGroundDetails = () => {
                 attacker.healthMax
             );
 
-            const defenderDefenseBonus =
-                defender.poisonedBonus || defender.becamePoisonedBonus
-                    ? 0.7
-                    : defender.wallBonus
-                      ? 4
-                      : defender.defenceBonus
-                        ? 1.5
-                        : 1;
+            let defenderDefenseBonus = defender.wallBonus
+                ? 4
+                : defender.defenceBonus
+                  ? 1.5
+                  : 1;
+            if (defender.poisonedBonus || defender.becamePoisonedBonus) {
+                if (versionConfig?.poisonScheme === PoisonScheme.OLD) {
+                    // Force defense bonus to 0.7
+                    defenderDefenseBonus = 0.7;
+                } else {
+                    // Just halve the defense bonus
+                    defenderDefenseBonus = defenderDefenseBonus * 0.5;
+                }
+            }
+
+            // const defenderDefenseBonus =
+            //     defender.poisonedBonus || defender.becamePoisonedBonus
+            //         ? 0.7
+            //         : defender.wallBonus
+            //           ? 4
+            //           : defender.defenceBonus
+            //             ? 1.5
+            //             : 1;
 
             const defenseForce = calculateDefenceForce(
                 defender.config.defence,
@@ -640,22 +677,21 @@ const BattleGroundDetails = () => {
             const totalDamage = calculateTotalDamage(attackForce, defenseForce);
 
             let attackResult = 0;
-            if (attacker.explodeDamage || attacker.typeUnit === "Segment") {
+            const isSplash =
+                attacker.explodeDamage ||
+                attacker.typeUnit === "Segment" ||
+                (attacker.splashDamage &&
+                    (attacker.config.skills.includes("splash") ||
+                        attacker.config.skills.includes("stomp")));
+            if (isSplash) {
                 attackResult = calculateAttackSplash(
                     attackForce,
                     totalDamage,
                     attackerAttack
                 );
-            } else if (
-                attacker.splashDamage &&
-                (attacker.config.skills.includes("splash") ||
-                    attacker.config.skills.includes("stomp"))
-            ) {
-                attackResult = calculateAttackSplash(
-                    attackForce,
-                    totalDamage,
-                    attackerAttack
-                );
+                if (versionConfig?.splashScheme === SplashScheme.FLOOR) {
+                    attackResult = Math.floor(attackResult);
+                }
             } else {
                 attackResult = calculateAttackResult(
                     attackForce,

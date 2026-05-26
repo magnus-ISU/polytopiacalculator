@@ -1,0 +1,20 @@
+{
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+
+    "js/ts.suggest.autoImports": true,
+    "js/ts.updateImportsOnFileMove.enabled": "always",
+
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+
+    "prettier.requireConfig": true
+}
